@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scene Reader">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADCElEQVR4nO3cvU4UURiAYTB2trZqY+sd2BsbQkG8M2/CUBAaY+8deAfWtvYW25DIi8s6Z/54npIAM7v75hwyMx/nr968PYP7PFv6BFgvcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRyk50ufAI/w7eWLv7/44dfvQYc79y8YNuHeLO4akYhtZQP+WcaR3/NY4li74z/1yfsQx6o99vOetg9xrNdpn/SEfYiDJI6V+p8FYKrFQxwkcZDmuEJ6cXk1w1H25vvXpc9gcByy2DTbCmlgHJaNrbNyrNTn9x9P/tmpbsKJgySO9Tpt8Zjw3r04Vu2xfUz7VIc41u74PiZ/3kccG3BMHyOeBPMM6TYcPvuZnyEVx5aM6+BeA7eV25vrcb/8SVnqnfQ3B2mO0QTX0U+27OprboVkWyGJgyQOkjhI4iCJgyQOkjhI4iCJg2TibQJ7vf889t7K7rO4a3+J2FZIJt4ms7/Xa+UgiYMkDpI4SOIgiYMkDpI4SCbeJrO/12vlIJl4m8D+1owDE28k2wpJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHKQ5pux//vg0w1GeoNfvvgz9/WOf55DFDMYlYlshDYzDsjGPce+zlYMkDpI4SOIgiYMkDpI4SOIgDYxj9JV/Dlw+ZwFzDFK7jj7Itu/Ksmm2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SCbeFrCV+9Um3haz/kRsKyQTb4tZ//tj5SCJgyQOkjhI4iCJgyQOkjhIJt4Ws/73x8pBMvG2gPWvGQcm3ki2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SOIgiYM0x6zsxeXVDEcZ6vbmeulTWMDYu7I7yOKup5aIbYU0MI6dLRtne3xFD7NykMRBEgdJHCRxkMRBEgdJHKSBcezvYvP+XtHDrBykOcYhd3DV+amtGQdmZUm2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SOIgiYMkDpI4SH8ASM104rP8uYkAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADCElEQVR4nO3cvU4UURiAYTB2trZqY+sd2BsbQkG8M2/CUBAaY+8deAfWtvYW25DIi8s6Z/54npIAM7v75hwyMx/nr968PYP7PFv6BFgvcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRyk50ufAI/w7eWLv7/44dfvQYc79y8YNuHeLO4akYhtZQP+WcaR3/NY4li74z/1yfsQx6o99vOetg9xrNdpn/SEfYiDJI6V+p8FYKrFQxwkcZDmuEJ6cXk1w1H25vvXpc9gcByy2DTbCmlgHJaNrbNyrNTn9x9P/tmpbsKJgySO9Tpt8Zjw3r04Vu2xfUz7VIc41u74PiZ/3kccG3BMHyOeBPMM6TYcPvuZnyEVx5aM6+BeA7eV25vrcb/8SVnqnfQ3B2mO0QTX0U+27OprboVkWyGJgyQOkjhI4iCJgyQOkjhI4iCJg2TibQJ7vf889t7K7rO4a3+J2FZIJt4ms7/Xa+UgiYMkDpI4SOIgiYMkDpI4SCbeJrO/12vlIJl4m8D+1owDE28k2wpJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHKQ5pux//vg0w1GeoNfvvgz9/WOf55DFDMYlYlshDYzDsjGPce+zlYMkDpI4SOIgiYMkDpI4SOIgDYxj9JV/Dlw+ZwFzDFK7jj7Itu/Ksmm2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SCbeFrCV+9Um3haz/kRsKyQTb4tZ//tj5SCJgyQOkjhI4iCJgyQOkjhIJt4Ws/73x8pBMvG2gPWvGQcm3ki2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SOIgiYM0x6zsxeXVDEcZ6vbmeulTWMDYu7I7yOKup5aIbYU0MI6dLRtne3xFD7NykMRBEgdJHCRxkMRBEgdJHKSBcezvYvP+XtHDrBykOcYhd3DV+amtGQdmZUm2FZI4SOIgiYMkDpI4SOIgiYMkDpI4SOIgiYMkDpI4SH8ASM104rP8uYkAAAAASUVORK5CYII=">
+<title>Scene Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: setup panel on the left, a page of "sides" on the right with your lines highlighted the way actors mark a script; a cue bar pinned above it. */
+:root{
+  --paper:#fbfbf8; --page:#ffffff; --ink:#1d1f24; --muted:#6b6f78; --rule:#e2e1db;
+  --hl:#fff27a; --hl-ink:#3a3500; --cue:#2f5bd3; --cue-soft:#e6ecfb; --live:#d6332f; --ok:#1f8a4c;
+  --panel:#f1f0ea;
+  --f-script:"Courier Prime","Courier New",Courier,monospace;
+  --f-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#16181c; --page:#1e2026; --ink:#e9e8e3; --muted:#9a9ea8; --rule:#2e3139;
+  --hl:#5a5214; --hl-ink:#fff6b0; --cue:#8fa9ff; --cue-soft:#232c45; --live:#ff6b66; --ok:#5fd394;
+  --panel:#1b1d22; color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--f-ui)}
+button,select,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(60px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}}
+header.top{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:12px}
+header.top h1{font:700 26px/1.1 var(--f-script);margin:0;letter-spacing:.02em}
+header.top p{margin:0;color:var(--muted);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:14px;align-self:start}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+textarea{width:100%;min-height:200px;resize:vertical;background:var(--page);border:1px solid var(--rule);border-radius:4px;padding:10px;font:13px/1.45 var(--f-script)}
+select,input[type=number]{background:var(--page);border:1px solid var(--rule);border-radius:4px;padding:7px 8px;width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 120px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.range{display:flex;align-items:center;gap:8px}.range input{flex:1}.range output{font-variant-numeric:tabular-nums;font-size:12px;min-width:52px;text-align:right;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.voices{display:flex;flex-direction:column;gap:8px}
+.voice-row{display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center}
+.voice-row b{font:700 13px var(--f-script);overflow:hidden;text-overflow:ellipsis}
+.btn{border:1px solid var(--rule);background:var(--page);border-radius:4px;padding:8px 12px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--muted)}
+.btn:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,.line:focus-visible{outline:2px solid var(--cue);outline-offset:2px}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.small{padding:4px 8px;font-size:12px}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+
+.stage{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cuebar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--page);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+.cue-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.state{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
+.state[data-s=reader] .dot{background:var(--cue);animation:pulse 1s infinite}
+.state[data-s=you] .dot{background:var(--live);animation:pulse 1s infinite}
+.state[data-s=done] .dot{background:var(--ok)}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none!important}}
+.progress{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.meter{height:8px;background:var(--rule);border-radius:4px;position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;width:0;background:var(--ok);transition:width .06s linear}
+.meter b{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5;left:0}
+.heard{font:13px/1.4 var(--f-script);color:var(--muted);min-height:1.4em;overflow-wrap:anywhere}
+.notice{font-size:13px;padding:8px 10px;border-radius:4px;background:var(--cue-soft);color:var(--ink)}
+.countdown{position:fixed;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--paper) 88%,transparent);z-index:20;font:700 min(30vw,220px)/1 var(--f-script)}
+
+.sides{background:var(--page);border:1px solid var(--rule);border-radius:2px;padding:28px clamp(16px,5vw,64px);box-shadow:0 1px 0 var(--rule),0 2px 0 var(--rule)}
+.sides.hidden-text .txt{filter:blur(6px)}
+.sides h2{font:700 13px var(--f-script);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;text-align:center}
+.line{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;padding:8px 10px 8px 12px;margin:0 0 6px;cursor:pointer;border-radius:2px;font:15px/1.55 var(--f-script)}
+.line .who{display:block;font-weight:700;letter-spacing:.06em;margin-bottom:2px;padding-left:22%}
+.line .txt{display:block;padding:0 12% 0 10%}
+.line .pd{color:var(--muted)}
+.line.mine .txt{background:linear-gradient(transparent 8%,var(--hl) 8%,var(--hl) 92%,transparent 92%);color:var(--hl-ink);box-decoration-break:clone;-webkit-box-decoration-break:clone;display:inline;padding:0 2px;margin-left:10%}
+.line.mine .who{color:var(--hl-ink)}
+@media (prefers-color-scheme: light){.line.mine .who{color:var(--ink)}}
+.line.current{border-left-color:var(--live);background:var(--cue-soft)}
+.line.start-mark::before{content:"▶ start here";display:block;font:600 11px var(--f-ui);letter-spacing:.06em;color:var(--cue);text-transform:uppercase;margin-bottom:4px}
+.line.done{opacity:.55}
+.empty{color:var(--muted);text-align:center;font-family:var(--f-script)}
+@media (pointer:coarse){.btn{min-height:44px;padding:10px 16px}.btn.small{min-height:40px}select,input[type=number]{min-height:44px;font-size:16px}textarea{font-size:16px}input[type=range]{height:32px}}
+#nextBtn{flex:1 1 160px}
+@media (max-width:860px){body.running .panel{display:none}}
+.ipad-note{font-size:12px;color:var(--muted);margin:0}
+kbd{font:12px var(--f-ui);border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--panel)}
+@media (max-width:520px){.line .who{padding-left:12%}.line .txt{padding:0 2% 0 4%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>SCENE READER</h1>
+    <p>Reads the other parts aloud and comes in on cue when you finish your line.</p>
+  </header>
+
+  <aside class="panel" aria-label="Setup">
+    <div class="field">
+      <label for="script">Script</label>
+      <textarea id="script" spellcheck="false"></textarea>
+      <p class="hint">Use <b>NAME: line</b> on each line, or standard screenplay layout (name in capitals on its own line, dialogue underneath). Anything in (brackets) is shown but not spoken.</p>
+      <div class="row"><button class="btn small" id="loadSample" type="button">Load sample scene</button></div>
+    </div>
+
+    <div class="field">
+      <label for="me">I'm playing</label>
+      <select id="me"></select>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Reader voices</span>
+      <div class="voices" id="voices"></div>
+      <p class="hint" id="voiceHint">Pick the most natural-sounding voice for each character.</p>
+    </div>
+
+    <div class="field">
+      <label for="mode">How it knows you've finished</label>
+      <select id="mode">
+        <option value="words">Listen for my words (recommended)</option>
+        <option value="pause">Wait for me to stop talking</option>
+        <option value="manual">I'll press a key / clicker</option>
+      </select>
+      <p class="hint" id="modeHint"></p>
+    </div>
+
+    <details>
+      <summary>Timing &amp; sensitivity</summary>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+        <div class="field"><label for="pickup">Pick-up pause before reader speaks</label>
+          <div class="range"><input type="range" id="pickup" min="0" max="2000" step="50" value="250"><output id="pickupOut"></output></div></div>
+        <div class="field"><label for="pauseMs">Silence that counts as "finished"</label>
+          <div class="range"><input type="range" id="pauseMs" min="400" max="3000" step="50" value="1000"><output id="pauseOut"></output></div>
+          <p class="hint">Raise this if it jumps in during your dramatic pauses.</p></div>
+        <div class="field"><label for="sens">Mic sensitivity</label>
+          <div class="range"><input type="range" id="sens" min="1" max="10" step="1" value="5"><output id="sensOut"></output></div></div>
+        <div class="field"><label for="rate">Reader speed</label>
+          <div class="range"><input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1"><output id="rateOut"></output></div></div>
+        <div class="field"><label for="vol">Reader volume</label>
+          <div class="range"><input type="range" id="vol" min="0.1" max="1" step="0.05" value="0.8"><output id="volOut"></output></div>
+          <p class="hint">Casting likes the reader quieter than you.</p></div>
+        <div class="field"><label for="count">Countdown before start</label>
+          <select id="count"><option value="0">None</option><option value="3">3 seconds</option><option value="5" selected>5 seconds</option><option value="10">10 seconds</option></select></div>
+      </div>
+    </details>
+
+    <label class="check"><input type="checkbox" id="hideText"> <span>Blur the script while running (for off-book takes)</span></label>
+
+    <p class="ipad-note" id="iosNote" hidden>On iPad: keep Scene Reader on screen while you film on another device. For better voices, download an "Enhanced" English voice in Settings &gt; Accessibility &gt; Spoken Content &gt; Voices.</p>
+    <p class="hint">Keys: <kbd>Space</kbd> or a clicker's next button = next cue / skip. <kbd>Esc</kbd> = stop. Click any line to start from there.</p>
+  </aside>
+
+  <main class="stage">
+    <section class="cuebar" aria-live="polite">
+      <div class="cue-top">
+        <div class="state" id="state" data-s="idle"><span class="dot"></span><span id="stateText">Ready</span></div>
+        <span class="progress" id="progress"></span>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="startBtn" type="button">Start scene</button>
+        <button class="btn" id="nextBtn" type="button" disabled>Next cue</button>
+        <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
+        <button class="btn" id="testBtn" type="button">Test voice</button>
+      </div>
+      <div class="meter" title="Microphone level. The line marks the 'speaking' threshold."><i id="meterBar"></i><b id="meterMark"></b></div>
+      <div class="heard" id="heard"></div>
+      <div class="notice" id="notice" hidden></div>
+    </section>
+
+    <article class="sides" id="sides"><h2>Sides</h2><div id="lines"></div></article>
+  </main>
+</div>
+<div class="countdown" id="countdown" hidden></div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const store = {
+  get(k,d){try{const v=localStorage.getItem('sr_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('sr_'+k,JSON.stringify(v))}catch(e){}}
+};
+
+const SAMPLE = `INT. HOSPITAL CAR PARK - NIGHT
+
+JO: You came, then.
+SAM: You said it was urgent. You never say anything's urgent.
+JO: (lighting a cigarette) Dad's asking for you.
+SAM: Dad hasn't asked for me in six years.
+JO: Well, he is now. I didn't know what to tell him.
+SAM: Tell him I'm parking.
+JO: Sam.
+SAM: What? What do you want me to say, Jo? That I'm ready? I'm not ready.
+JO: Nobody's ready. That's not how it works. You just walk in.
+SAM: (beat) Is he scared?
+JO: He's pretending he isn't. Which is how I know he is.
+SAM: Right. Okay. Give me one minute.
+JO: Take two. I'll wait.`;
+
+// ---------- parsing ----------
+function cleanName(n){return n.replace(/\s*\(.*?\)\s*/g,'').replace(/\s+/g,' ').trim().toUpperCase()}
+function parse(text){
+  const out=[]; let block=null;
+  const isHeading=t=>/^(INT|EXT|INT\.?\/EXT|I\/E)[.\s]/i.test(t)||/(CUT TO|FADE (IN|OUT)|DISSOLVE TO)/i.test(t);
+  for(const raw of text.replace(/\r/g,'').split('\n')){
+    const t=raw.trim();
+    if(!t){block=null;continue}
+    if(isHeading(t)){block=null;continue}
+    const m=t.match(/^([A-Za-z][A-Za-z0-9 .'\-]{0,28}?)\s*(\([^)]*\))?\s*:\s*(.+)$/);
+    if(m && !/^https?$/i.test(m[1])){
+      block=null; out.push({name:cleanName(m[1]),text:(m[2]?m[2]+' ':'')+m[3].trim()}); continue;
+    }
+    if(/^[A-Z][A-Z0-9 .'\-]{0,28}(\s*\(.*\))?$/.test(t) && /[A-Z]{2}/.test(t)){
+      block={name:cleanName(t),entry:null}; continue;
+    }
+    if(block){
+      if(/^\(.*\)$/.test(t) && !block.entry){block.pre=(block.pre||'')+t+' ';continue}
+      if(block.entry){block.entry.text+=' '+t}
+      else{block.entry={name:block.name,text:(block.pre||'')+t};out.push(block.entry)}
+    }
+  }
+  return out.filter(e=>spoken(e.text).length||e.text.length);
+}
+function spoken(t){return t.replace(/\([^)]*\)|\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim()}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmtText(t){return esc(t).replace(/(\([^)]*\)|\[[^\]]*\])/g,'<span class="pd">$1</span>')}
+
+// ---------- state ----------
+let entries=[], chars=[], me='', startIdx=0, idx=0, runId=0, running=false;
+let voiceList=[], charVoice=store.get('voices',{});
+const settings={
+  pickup:+store.get('pickup',250), pauseMs:+store.get('pauseMs',1000), sens:+store.get('sens',5),
+  rate:+store.get('rate',1), vol:+store.get('vol',isIOS?1:0.8)
+};
+
+// ---------- UI build ----------
+const scriptEl=$('script');
+scriptEl.value=store.get('script',SAMPLE);
+$('mode').value=store.get('mode',isIOS?'pause':'words');
+$('count').value=String(store.get('count',5));
+$('hideText').checked=store.get('hide',false);
+
+function rebuild(){
+  entries=parse(scriptEl.value);
+  chars=[...new Set(entries.map(e=>e.name))];
+  const saved=store.get('me','');
+  me=chars.includes(me)?me:(chars.includes(saved)?saved:(chars.includes('SAM')?'SAM':chars[0]||''));
+  $('me').innerHTML=chars.map(c=>`<option ${c===me?'selected':''}>${esc(c)}</option>`).join('');
+  if(startIdx>=entries.length)startIdx=0;
+  renderLines(); renderVoices(); setProgress();
+}
+function renderLines(){
+  const box=$('lines');
+  if(!entries.length){box.innerHTML='<p class="empty">Paste a scene on the left to see your sides here.</p>';return}
+  box.innerHTML=entries.map((e,i)=>`<button type="button" class="line ${e.name===me?'mine':''} ${i===startIdx&&!running?'start-mark':''}" data-i="${i}"><span class="who">${esc(e.name)}</span><span class="txt">${fmtText(e.text)}</span></button>`).join('');
+}
+$('lines').addEventListener('click',ev=>{
+  const b=ev.target.closest('.line'); if(!b)return;
+  startIdx=+b.dataset.i;
+  if(running)unlockAudio();
+  if(running){jumpTo(startIdx)}else{renderLines();setProgress()}
+});
+function markCurrent(i){
+  document.querySelectorAll('.line').forEach(el=>{
+    const n=+el.dataset.i;
+    el.classList.toggle('current',n===i);
+    el.classList.toggle('done',running&&n<i);
+    el.classList.remove('start-mark');
+  });
+  const cur=document.querySelector(`.line[data-i="${i}"]`);
+  if(cur)cur.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+function setProgress(){$('progress').textContent=entries.length?`Line ${Math.min((running?idx:startIdx)+1,entries.length)} of ${entries.length}`:''}
+function setState(s,txt){$('state').dataset.s=s;$('stateText').textContent=txt}
+function notice(msg){const n=$('notice');if(!msg){n.hidden=true;return}n.hidden=false;n.textContent=msg}
+
+scriptEl.addEventListener('input',()=>{store.set('script',scriptEl.value);rebuild()});
+$('loadSample').onclick=()=>{scriptEl.value=SAMPLE;store.set('script',SAMPLE);startIdx=0;rebuild()};
+$('me').onchange=e=>{me=e.target.value;store.set('me',me);renderLines();renderVoices()};
+$('mode').onchange=e=>{store.set('mode',e.target.value);modeHint()};
+$('count').onchange=e=>store.set('count',+e.target.value);
+$('hideText').onchange=e=>{store.set('hide',e.target.checked);applyHide()};
+function applyHide(){$('sides').classList.toggle('hidden-text',running&&$('hideText').checked)}
+function modeHint(){
+  const m=$('mode').value, sr=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  $('modeHint').textContent=
+    m==='words'?(sr?(isIOS?'Follows your words so it won\'t cut in on a mid-line pause. Needs an internet connection. On iPad this can be patchy, so test it before a real take.':'Follows your words, so it won\'t cut in on a mid-line pause. Needs Chrome and an internet connection.'):(isIOS?'Not available in this browser on iPad. Try Safari, or use "Wait for me to stop talking".':'This browser can\'t recognise speech. Use Chrome, or pick "Wait for me to stop talking".'))
+    :m==='pause'?'Works offline in any browser. Comes in after you\'ve been quiet for the time set below.'
+    :'Press Space, an arrow key or a Bluetooth page-turner/clicker after each of your lines.';
+}
+function bindRange(id,outId,key,fmt){
+  const el=$(id);el.value=settings[key];
+  const upd=()=>{settings[key]=+el.value;$(outId).textContent=fmt(+el.value);store.set(key,+el.value);updateMark()};
+  el.oninput=upd;upd();
+}
+bindRange('pickup','pickupOut','pickup',v=>v+' ms');
+bindRange('pauseMs','pauseOut','pauseMs',v=>(v/1000).toFixed(2)+' s');
+bindRange('sens','sensOut','sens',v=>v+' / 10');
+bindRange('rate','rateOut','rate',v=>v.toFixed(2)+'×');
+bindRange('vol','volOut','vol',v=>Math.round(v*100)+'%');
+
+// ---------- voices ----------
+function loadVoices(){
+  voiceList=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  if(!voiceList.length)voiceList=speechSynthesis.getVoices();
+  voiceList.sort((a,b)=>score(b)-score(a));
+  renderVoices();
+}
+function score(v){let s=0;if(/en-GB/i.test(v.lang))s+=4;if(/google|natural|neural|premium|enhanced/i.test(v.name))s+=3;if(v.localService===false)s+=1;return s}
+function renderVoices(){
+  const box=$('voices'); const others=chars.filter(c=>c!==me);
+  if(!('speechSynthesis' in window)){box.innerHTML='<p class="hint">This browser can\'t speak. Open the file in Chrome.</p>';return}
+  if(!others.length){box.innerHTML='<p class="hint">No other characters found yet.</p>';return}
+  box.innerHTML=others.map((c,k)=>{
+    const sel=charVoice[c]||(voiceList[k%Math.max(voiceList.length,1)]||{}).name||'';
+    return `<div class="voice-row"><b title="${esc(c)}">${esc(c)}</b><select data-c="${esc(c)}" aria-label="Voice for ${esc(c)}">${voiceList.map(v=>`<option value="${esc(v.name)}" ${v.name===sel?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')}</select><button type="button" class="btn small" data-try="${esc(c)}">Play</button></div>`;
+  }).join('');
+}
+$('voices').addEventListener('change',e=>{const s=e.target.closest('select');if(s){charVoice[s.dataset.c]=s.value;store.set('voices',charVoice)}});
+$('voices').addEventListener('click',e=>{const b=e.target.closest('[data-try]');if(b){unlockAudio();speechSynthesis.cancel();const l=entries.find(x=>x.name===b.dataset.try);speak({name:b.dataset.try,text:l?l.text:'Hello, ready when you are.'},null)}});
+function voiceFor(name){
+  const others=chars.filter(c=>c!==me);
+  const n=charVoice[name]||(voiceList[Math.max(0,others.indexOf(name))%Math.max(voiceList.length,1)]||{}).name;
+  return voiceList.find(v=>v.name===n)||voiceList[0]||null;
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+// ---------- speaking ----------
+let skipReader=false, audioCtx=null;
+function speak(entry,token){
+  skipReader=false;
+  return new Promise(resolve=>{
+    const text=spoken(entry.text);
+    if(!text){resolve();return}
+    // Speak sentence by sentence: long utterances get cut off in some browsers.
+    const parts=text.match(/[^.!?…]+[.!?…]+["'”’]?|[^.!?…]+$/g)||[text];
+    const v=voiceFor(entry.name); let i=0, finished=false;
+    const end=()=>{if(!finished){finished=true;resolve()}};
+    const next=()=>{
+      if(finished)return;
+      if(skipReader){skipReader=false;end();return}
+      if(token!==null&&token!==runId){end();return}
+      if(i>=parts.length){end();return}
+      const part=parts[i++].trim();
+      const u=new SpeechSynthesisUtterance(part);
+      if(v){u.voice=v;u.lang=v.lang}
+      u.rate=settings.rate;u.volume=settings.vol;
+      let fired=false, wd=0;
+      const go=()=>{if(fired)return;fired=true;clearTimeout(wd);next()};
+      u.onend=go;u.onerror=go;
+      // Safety net: if the browser never reports the end of a sentence, carry on anyway.
+      wd=setTimeout(()=>{if(!fired){speechSynthesis.cancel();go()}},part.split(/\s+/).length/(2.3*settings.rate)*1000+3000);
+      speechSynthesis.speak(u);
+    };
+    next();
+  });
+}
+// iPad/iPhone only allow sound to start from a tap, so prime speech and audio inside the tap itself.
+function unlockAudio(){
+  try{
+    if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)()}
+    if(audioCtx.state==='suspended')audioCtx.resume();
+  }catch(_){}
+  try{
+    if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}
+  }catch(_){}
+}
+$('testBtn').onclick=()=>{unlockAudio();speechSynthesis.cancel();const o=entries.find(e=>e.name!==me);speak(o||{name:'',text:'Ready when you are.'},null)};
+
+// ---------- microphone ----------
+let analyser=null, micStream=null, buf=null, level=0, floor=0.01, meterOn=false;
+async function initMic(){
+  if(micStream)return true;
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false}});
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    const src=audioCtx.createMediaStreamSource(micStream);
+    analyser=audioCtx.createAnalyser();analyser.fftSize=1024;src.connect(analyser);
+    buf=new Float32Array(analyser.fftSize);
+    if(!meterOn){meterOn=true;requestAnimationFrame(meterLoop)}
+    return true;
+  }catch(e){
+    notice('Microphone blocked. Allow mic access in the address bar, or switch to "I\'ll press a key / clicker".');
+    return false;
+  }
+}
+function threshold(){return Math.max(0.006,floor*1.6)*(11-settings.sens)/4+0.004}
+function meterLoop(){
+  if(analyser){
+    analyser.getFloatTimeDomainData(buf);
+    let s=0;for(let i=0;i<buf.length;i++)s+=buf[i]*buf[i];
+    level=Math.sqrt(s/buf.length);
+    $('meterBar').style.width=Math.min(100,level*900)+'%';
+    tickDetector();
+  }
+  requestAnimationFrame(meterLoop);
+}
+function updateMark(){$('meterMark').style.left=Math.min(100,threshold()*900)+'%'}
+async function sampleFloor(ms){
+  const vals=[];const t0=performance.now();
+  while(performance.now()-t0<ms){vals.push(level);await sleep(40)}
+  vals.sort((a,b)=>a-b);floor=vals[Math.floor(vals.length*0.6)]||0.01;updateMark();
+}
+
+// ---------- listening for your line ----------
+let turn=null; // {resolve, entry, speechMs, lastVoice, lastTick, heard, startedAt}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recog=null, recogWanted=false, recogBroken=false;
+function norm(s){return s.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(Boolean)}
+function setupRecog(){
+  if(!SR||recog)return;
+  recog=new SR();recog.continuous=true;recog.interimResults=true;recog.lang='en-GB';
+  recog.onresult=e=>{
+    if(!turn)return;
+    let txt='';for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript+' ';
+    turn.heard=txt;$('heard').textContent='Heard: '+txt.trim();
+    turn.lastWordsAt=performance.now();
+    checkWords();
+  };
+  recog.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'||e.error==='network'||e.error==='audio-capture'){
+      recogBroken=true;recogWanted=false;
+      notice('Speech recognition isn\'t available here ('+e.error+'). Switched to "Wait for me to stop talking" for this run.');
+    }
+  };
+  recog.onend=()=>{if(recogWanted){try{recog.start()}catch(_){}}};
+}
+function startRecog(){if(!recog)return;recogWanted=true;try{recog.start()}catch(_){}}
+function stopRecog(){recogWanted=false;if(recog){try{recog.abort()}catch(_){}}}
+function coverage(lineWords,heardWords){
+  if(!lineWords.length)return{cov:1,end:true};
+  const bag={};heardWords.forEach(w=>bag[w]=(bag[w]||0)+1);
+  let hit=0;for(const w of lineWords){if(bag[w]){bag[w]--;hit++}}
+  const tailN=Math.min(2,lineWords.length), tail=lineWords.slice(-tailN), recent=heardWords.slice(-6);
+  const end=tail.every(w=>recent.includes(w));
+  return{cov:hit/lineWords.length,end};
+}
+function checkWords(){
+  if(!turn||turn.mode!=='words'||recogBroken)return;
+  const lw=norm(spoken(turn.entry.text)), hw=norm(turn.heard||'');
+  const {cov,end}=coverage(lw,hw);
+  turn.cov=cov;
+  if(end&&cov>=0.6)finishTurn();
+}
+function tickDetector(){
+  if(!turn||turn.mode==='manual')return;
+  const now=performance.now(), dt=now-(turn.lastTick||now);turn.lastTick=now;
+  if(now-turn.startedAt<250)return; // ignore tail of reader's voice
+  if(level>threshold()){turn.speechMs+=dt;turn.lastVoice=now}
+  const silent=now-(turn.lastVoice||now);
+  const mode=(turn.mode==='words'&&recogBroken)?'pause':turn.mode;
+  if(mode==='pause'){
+    if(turn.speechMs>=350&&turn.lastVoice&&silent>=settings.pauseMs)finishTurn();
+  }else if(mode==='words'){
+    // Fallbacks for when recognition lags or mishears.
+    if(turn.cov>=0.8&&turn.lastVoice&&silent>=Math.min(settings.pauseMs,700))finishTurn();
+    else if(turn.speechMs>=600&&turn.lastVoice&&silent>=settings.pauseMs*2.5)finishTurn();
+  }
+}
+function waitForYou(entry,mode){
+  return new Promise(resolve=>{
+    turn={resolve,entry,mode,speechMs:0,lastVoice:0,startedAt:performance.now(),heard:'',cov:0};
+    $('heard').textContent='';
+    if(mode==='words'&&!recogBroken)startRecog();
+  });
+}
+function finishTurn(){
+  if(!turn)return;const r=turn.resolve;turn=null;stopRecog();r();
+}
+
+// ---------- running the scene ----------
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let wakeLock=null;
+async function start(){
+  if(!entries.length){notice('Paste a scene first.');return}
+  if(!me){notice('Choose who you\'re playing.');return}
+  notice('');
+  const mode=$('mode').value;
+  if(mode==='words'&&!SR){notice('This browser can\'t recognise speech, so I\'m using "Wait for me to stop talking". Chrome supports the word-following mode.')}
+  if(mode!=='manual'){const ok=await initMic();if(!ok)return;if(audioCtx.state==='suspended')await audioCtx.resume()}
+  recogBroken=false; if(mode==='words'&&SR)setupRecog();
+  const token=++runId; running=true; idx=startIdx; document.body.classList.add('running');
+  $('startBtn').disabled=true;$('nextBtn').disabled=false;$('stopBtn').disabled=false;
+  applyHide();
+  try{wakeLock=await navigator.wakeLock?.request('screen')}catch(_){}
+  const cd=+$('count').value, cdEl=$('countdown');
+  setState('idle','Getting ready');
+  if(cd>0){
+    cdEl.hidden=false;
+    const floorP=mode!=='manual'?sampleFloor(Math.min(cd*1000-200,1500)):null;
+    for(let n=cd;n>0;n--){if(token!==runId){cdEl.hidden=true;return}cdEl.textContent=n;await sleep(1000)}
+    cdEl.hidden=true;await floorP;
+  }else if(mode!=='manual'){await sampleFloor(600)}
+  const eff=(mode==='words'&&!SR)?'pause':mode;
+  while(token===runId&&idx<entries.length){
+    const e=entries[idx];markCurrent(idx);setProgress();
+    if(e.name===me){
+      setState('you',eff==='manual'?'Your line — press Space when done':'Your line — listening');
+      await waitForYou(e,eff);
+    }else{
+      setState('reader',e.name+' speaking');
+      if(settings.pickup)await sleep(settings.pickup);
+      if(token!==runId)break;
+      await speak(e,token);
+    }
+    if(token!==runId)return;
+    idx++;
+  }
+  if(token===runId){setState('done','Scene complete');finish(false)}
+}
+function finish(stopped){
+  running=false;turn=null;stopRecog();speechSynthesis.cancel();document.body.classList.remove('running');
+  $('countdown').hidden=true;
+  $('startBtn').disabled=false;$('nextBtn').disabled=true;$('stopBtn').disabled=true;
+  $('startBtn').textContent=stopped?'Start scene':'Run it again';
+  applyHide();
+  try{wakeLock&&wakeLock.release()}catch(_){}wakeLock=null;
+  if(stopped){setState('idle','Stopped');renderLines()}
+  setProgress();
+}
+function stop(){runId++;finish(true)}
+function next(){
+  if(!running)return;
+  if(turn){finishTurn()}else{skipReader=true;speechSynthesis.cancel()}
+}
+function jumpTo(i){
+  // restart the loop from a clicked line
+  runId++;turn=null;stopRecog();speechSynthesis.cancel();running=false;startIdx=i;
+  const c=$('count').value;$('count').value='0';
+  start().finally(()=>{$('count').value=c});
+}
+$('startBtn').onclick=()=>{unlockAudio();$('startBtn').textContent='Start scene';start()};
+$('stopBtn').onclick=stop;
+$('nextBtn').onclick=next;
+document.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='textarea'||tag==='input'||tag==='select')return;
+  if(e.key==='Escape'){if(running){e.preventDefault();stop()}return}
+  if([' ','ArrowRight','ArrowDown','PageDown','Enter'].includes(e.key)){
+    if(running){e.preventDefault();next()}
+    else if(e.key===' '&&tag!=='button'){e.preventDefault();unlockAudio();start()}
+  }
+});
+
+if(isIOS)$('iosNote').hidden=false;
+modeHint();rebuild();updateMark();
+})();
+</script>
+</body>
+</html>
