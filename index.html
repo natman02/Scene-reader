@@ -27,6 +27,7 @@
   --panel:#1b1d22; color-scheme:dark;
 }}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--f-ui)}
 button,select,input,textarea{font:inherit;color:inherit}
@@ -182,6 +183,7 @@ kbd{font:12px var(--f-ui);border:1px solid var(--rule);border-bottom-width:2px;b
 <script>
 (function(){
 const $ = id => document.getElementById(id);
+let analyser=null, micStream=null, buf=null, level=0, floor=0.01, meterOn=false;
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const store = {
   get(k,d){try{const v=localStorage.getItem('sr_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
@@ -375,7 +377,7 @@ function unlockAudio(){
 $('testBtn').onclick=()=>{unlockAudio();speechSynthesis.cancel();const o=entries.find(e=>e.name!==me);speak(o||{name:'',text:'Ready when you are.'},null)};
 
 // ---------- microphone ----------
-let analyser=null, micStream=null, buf=null, level=0, floor=0.01, meterOn=false;
+
 async function initMic(){
   if(micStream)return true;
   try{
