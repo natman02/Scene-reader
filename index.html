@@ -91,6 +91,13 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
 @media (pointer:coarse){.btn{min-height:44px;padding:10px 16px}.btn.small{min-height:40px}select,input[type=number]{min-height:44px;font-size:16px}textarea{font-size:16px}input[type=range]{height:32px}}
 #nextBtn{flex:1 1 160px}
 @media (max-width:860px){body.running .panel{display:none}}
+.ai{border-top:1px solid var(--rule);padding-top:12px}
+.ai-box{display:flex;flex-direction:column;gap:10px}
+.ai-box input[type=password],.ai-box input[type=text]{background:var(--page);border:1px solid var(--rule);border-radius:4px;padding:7px 8px;width:100%;min-width:0}
+.ai-status{font-size:12px;margin:0;color:var(--muted)}
+.ai-status.err{color:var(--live)}
+.ai-status.ok{color:var(--ok)}
+.tag{font:600 10px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:var(--cue-soft);color:var(--cue);margin-left:6px;vertical-align:middle}
 .ipad-note{font-size:12px;color:var(--muted);margin:0}
 kbd{font:12px var(--f-ui);border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--panel)}
 @media (max-width:520px){.line .who{padding-left:12%}.line .txt{padding:0 2% 0 4%}}
@@ -120,6 +127,29 @@ kbd{font:12px var(--f-ui);border:1px solid var(--rule);border-bottom-width:2px;b
       <span class="lbl">Reader voices</span>
       <div class="voices" id="voices"></div>
       <p class="hint" id="voiceHint">Pick the most natural-sounding voice for each character.</p>
+    </div>
+
+    <div class="field ai">
+      <span class="lbl">AI voices <span class="tag">ElevenLabs</span></span>
+      <label class="check"><input type="checkbox" id="aiOn"> <span>Use ElevenLabs voices for the reader</span></label>
+      <div class="ai-box" id="aiBox" hidden>
+        <div class="field">
+          <label for="aiKey">API key</label>
+          <input type="password" id="aiKey" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your ElevenLabs API key">
+          <p class="hint">Saved on this device only. It is never uploaded anywhere except to ElevenLabs.</p>
+        </div>
+        <div class="row"><button class="btn" id="aiConnect" type="button">Connect</button><button class="btn" id="aiShowKey" type="button">Show key</button></div>
+        <p class="ai-status" id="aiStatus"></p>
+        <div class="field" id="aiModelField" hidden>
+          <label for="aiModel">Voice model</label>
+          <select id="aiModel"></select>
+          <p class="hint">Changing the model means lines are generated again.</p>
+        </div>
+        <p class="hint" id="aiCost"></p>
+        <div class="row" id="aiActions" hidden><button class="btn" id="aiPrepare" type="button">Prepare voices for this scene</button></div>
+        <button class="btn small" id="aiClear" type="button" hidden>Delete saved audio</button>
+        <p class="hint">Each reader line is generated once and saved, so re-runs are free. Reader speed doesn't apply to AI voices. If a line can't be generated, the device voice reads it instead.</p>
+      </div>
     </div>
 
     <div class="field">
@@ -189,6 +219,10 @@ const store = {
   get(k,d){try{const v=localStorage.getItem('sr_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem('sr_'+k,JSON.stringify(v))}catch(e){}}
 };
+var aiKey=store.get('aiKey',''), aiVoices=store.get('aiVoices',[]), aiModels=store.get('aiModels',[]);
+var aiModel=store.get('aiModel','eleven_multilingual_v2'), aiCharVoice=store.get('aiCharVoice',{});
+var memCache=new Map();
+
 
 const SAMPLE = `INT. HOSPITAL CAR PARK - NIGHT
 
@@ -283,9 +317,9 @@ function setProgress(){$('progress').textContent=entries.length?`Line ${Math.min
 function setState(s,txt){$('state').dataset.s=s;$('stateText').textContent=txt}
 function notice(msg){const n=$('notice');if(!msg){n.hidden=true;return}n.hidden=false;n.textContent=msg}
 
-scriptEl.addEventListener('input',()=>{store.set('script',scriptEl.value);rebuild()});
+scriptEl.addEventListener('input',()=>{store.set('script',scriptEl.value);rebuild();updateCost()});
 $('loadSample').onclick=()=>{scriptEl.value=SAMPLE;store.set('script',SAMPLE);startIdx=0;rebuild()};
-$('me').onchange=e=>{me=e.target.value;store.set('me',me);renderLines();renderVoices()};
+$('me').onchange=e=>{me=e.target.value;store.set('me',me);renderLines();renderVoices();updateCost()};
 $('mode').onchange=e=>{store.set('mode',e.target.value);modeHint()};
 $('count').onchange=e=>store.set('count',+e.target.value);
 $('hideText').onchange=e=>{store.set('hide',e.target.checked);applyHide()};
@@ -318,6 +352,14 @@ function loadVoices(){
 function score(v){let s=0;if(/en-GB/i.test(v.lang))s+=4;if(/google|natural|neural|premium|enhanced/i.test(v.name))s+=3;if(v.localService===false)s+=1;return s}
 function renderVoices(){
   const box=$('voices'); const others=chars.filter(c=>c!==me);
+  if(aiReady()){
+    if(!others.length){box.innerHTML='<p class="hint">No other characters found yet.</p>';return}
+    box.innerHTML=others.map(c=>{
+      const sel=aiVoiceFor(c);
+      return `<div class="voice-row"><b title="${esc(c)}">${esc(c)}</b><select data-ai="${esc(c)}" aria-label="AI voice for ${esc(c)}">${aiVoices.map(v=>`<option value="${esc(v.id)}" ${v.id===sel?'selected':''}>${esc(aiLabel(v))}</option>`).join('')}</select><button type="button" class="btn small" data-preview="${esc(c)}">Play</button></div>`;
+    }).join('');
+    return;
+  }
   if(!('speechSynthesis' in window)){box.innerHTML='<p class="hint">This browser can\'t speak. Open the file in Chrome.</p>';return}
   if(!others.length){box.innerHTML='<p class="hint">No other characters found yet.</p>';return}
   box.innerHTML=others.map((c,k)=>{
@@ -325,14 +367,145 @@ function renderVoices(){
     return `<div class="voice-row"><b title="${esc(c)}">${esc(c)}</b><select data-c="${esc(c)}" aria-label="Voice for ${esc(c)}">${voiceList.map(v=>`<option value="${esc(v.name)}" ${v.name===sel?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')}</select><button type="button" class="btn small" data-try="${esc(c)}">Play</button></div>`;
   }).join('');
 }
-$('voices').addEventListener('change',e=>{const s=e.target.closest('select');if(s){charVoice[s.dataset.c]=s.value;store.set('voices',charVoice)}});
-$('voices').addEventListener('click',e=>{const b=e.target.closest('[data-try]');if(b){unlockAudio();speechSynthesis.cancel();const l=entries.find(x=>x.name===b.dataset.try);speak({name:b.dataset.try,text:l?l.text:'Hello, ready when you are.'},null)}});
+$('voices').addEventListener('change',e=>{const s=e.target.closest('select');if(s&&s.dataset.ai){aiCharVoice[s.dataset.ai]=s.value;store.set('aiCharVoice',aiCharVoice);updateCost();return}if(s){charVoice[s.dataset.c]=s.value;store.set('voices',charVoice)}});
+$('voices').addEventListener('click',e=>{const p=e.target.closest('[data-preview]');if(p){playPreview(aiVoiceFor(p.dataset.preview));return}const b=e.target.closest('[data-try]');if(b){unlockAudio();speechSynthesis.cancel();const l=entries.find(x=>x.name===b.dataset.try);speak({name:b.dataset.try,text:l?l.text:'Hello, ready when you are.'},null)}});
 function voiceFor(name){
   const others=chars.filter(c=>c!==me);
   const n=charVoice[name]||(voiceList[Math.max(0,others.indexOf(name))%Math.max(voiceList.length,1)]||{}).name;
   return voiceList.find(v=>v.name===n)||voiceList[0]||null;
 }
 if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+// ---------- ElevenLabs AI voices ----------
+const EL='https://api.elevenlabs.io';
+function aiReady(){return $('aiOn').checked&&!!aiKey&&aiVoices.length>0}
+function aiLabel(v){const l=v.labels||{};const bits=[l.accent,l.gender,l.age].filter(Boolean).join(', ');return v.name+(bits?' ('+bits+')':'')}
+function aiVoiceFor(name){
+  if(aiCharVoice[name]&&aiVoices.some(v=>v.id===aiCharVoice[name]))return aiCharVoice[name];
+  const others=chars.filter(c=>c!==me);const k=Math.max(0,others.indexOf(name));
+  return (aiVoices[k%Math.max(aiVoices.length,1)]||{}).id||'';
+}
+function aiStatus(msg,kind){const el=$('aiStatus');el.textContent=msg||'';el.className='ai-status'+(kind?' '+kind:'')}
+function aiExplain(e){
+  if(e&&e.name==='TypeError')return 'Couldn\'t reach ElevenLabs. Check your internet connection and try again.';
+  if(e&&e.status===401)return 'ElevenLabs didn\'t accept that key ('+(e.message||'401')+'). Check you copied all of it, and that the key has Text to Speech and Voices access turned on.';
+  return 'ElevenLabs said: '+((e&&e.message)||'unknown error');
+}
+async function elFetch(path,opts={}){
+  const r=await fetch(EL+path,{...opts,headers:{'xi-api-key':aiKey,...(opts.headers||{})}});
+  if(!r.ok){
+    let m='';
+    try{const j=await r.json();const d=j.detail;m=(d&&(typeof d==='string'?d:(d.message||d.status)))||j.message||''}catch(_){}
+    const err=new Error(m||('error '+r.status));err.status=r.status;throw err;
+  }
+  return r;
+}
+// Saved audio lives in IndexedDB so re-runs cost nothing.
+const audioDB=(()=>{
+  let p=null;
+  const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('scene-reader',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const run=async(mode,fn)=>{const d=await open();return new Promise((res,rej)=>{const t=d.transaction('audio',mode);const req=fn(t.objectStore('audio'));t.oncomplete=()=>res(req?req.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})};
+  return{
+    get:async k=>{if(memCache.has(k))return memCache.get(k);try{return await run('readonly',s=>s.get(k))}catch(_){return undefined}},
+    has:async k=>{if(memCache.has(k))return true;try{return (await run('readonly',s=>s.count(k)))>0}catch(_){return false}},
+    set:async(k,v)=>{memCache.set(k,v);try{await run('readwrite',s=>s.put(v,k))}catch(_){}},
+    clear:async()=>{memCache.clear();try{await run('readwrite',s=>s.clear())}catch(_){}}
+  };
+})();
+function aiCacheKey(i){const e=entries[i];const v=aiVoiceFor(e.name);const t=spoken(e.text);return v&&t?[v,aiModel,t].join('|'):null}
+function readerIdx(){const out=[];entries.forEach((e,i)=>{if(e.name!==me&&spoken(e.text))out.push(i)});return out}
+async function aiGenerate(i){
+  const e=entries[i], key=aiCacheKey(i); if(!key)return null;
+  const voice=aiVoiceFor(e.name), text=spoken(e.text);
+  const body={text,model_id:aiModel};
+  const prev=i>0?spoken(entries[i-1].text):'', nxt=i+1<entries.length?spoken(entries[i+1].text):'';
+  const withCtx={...body};if(prev)withCtx.previous_text=prev;if(nxt)withCtx.next_text=nxt;
+  const call=b=>elFetch('/v1/text-to-speech/'+encodeURIComponent(voice)+'?output_format=mp3_44100_128',{method:'POST',headers:{'Content-Type':'application/json','Accept':'audio/mpeg'},body:JSON.stringify(b)});
+  let r;
+  try{r=await call(withCtx)}catch(err){if((err.status===400||err.status===422)&&(prev||nxt))r=await call(body);else throw err}
+  const buf=await r.arrayBuffer();
+  await audioDB.set(key,buf);
+  return buf;
+}
+let costTimer=0;
+function updateCost(){clearTimeout(costTimer);costTimer=setTimeout(updateCostNow,250)}
+async function updateCostNow(){
+  const el=$('aiCost');
+  if(!aiReady()){el.textContent='';$('aiActions').hidden=true;return}
+  const idxs=readerIdx();let total=0,todo=0,todoLines=0;
+  for(const i of idxs){const n=spoken(entries[i].text).length;total+=n;if(!(await audioDB.has(aiCacheKey(i)))){todo+=n;todoLines++}}
+  $('aiActions').hidden=todoLines===0;
+  el.textContent=!idxs.length?'':todoLines===0
+    ?`All ${idxs.length} reader lines are saved. Running this scene uses no credits.`
+    :`${todoLines} of ${idxs.length} reader lines still to generate: about ${todo.toLocaleString()} credits.`+(quota?` You have about ${quota.toLocaleString()} left this month.`:'');
+}
+let quota=null;
+async function refreshQuota(){
+  try{const r=await elFetch('/v1/user/subscription');const j=await r.json();if(typeof j.character_limit==='number')quota=Math.max(0,j.character_limit-(j.character_count||0))}catch(_){quota=null}
+  updateCost();
+}
+async function aiPrepare(progress){
+  const idxs=readerIdx();let done=0;
+  for(const i of idxs){
+    if(!(await audioDB.has(aiCacheKey(i))))await aiGenerate(i);
+    done++;progress&&progress(done,idxs.length);
+  }
+}
+function renderModels(){
+  const list=aiModels.length?aiModels:[{id:'eleven_multilingual_v2',name:'Eleven Multilingual v2'}];
+  if(!list.some(m=>m.id===aiModel))aiModel=list.some(m=>m.id==='eleven_multilingual_v2')?'eleven_multilingual_v2':list[0].id;
+  $('aiModel').innerHTML=list.map(m=>`<option value="${esc(m.id)}" ${m.id===aiModel?'selected':''}>${esc(m.name)}</option>`).join('');
+}
+async function aiConnect(){
+  aiKey=$('aiKey').value.trim();store.set('aiKey',aiKey);
+  if(!aiKey){aiStatus('Paste your API key first.','err');return}
+  aiStatus('Connecting to ElevenLabs…');$('aiConnect').disabled=true;
+  try{
+    let all=[],tok=null,guard=0;
+    do{
+      const r=await elFetch('/v2/voices?page_size=100'+(tok?'&next_page_token='+encodeURIComponent(tok):''));
+      const j=await r.json();all=all.concat(j.voices||[]);tok=j.has_more?j.next_page_token:null;
+    }while(tok&&++guard<5);
+    aiVoices=all.map(v=>({id:v.voice_id,name:v.name,labels:v.labels||{},preview:v.preview_url||''}));
+    const brit=v=>/brit|english|uk|london|yorkshire|scottish|irish|welsh/i.test(JSON.stringify(v.labels))?0:1;
+    aiVoices.sort((a,b)=>brit(a)-brit(b)||a.name.localeCompare(b.name));
+    store.set('aiVoices',aiVoices);
+    try{const r=await elFetch('/v1/models');const j=await r.json();aiModels=(Array.isArray(j)?j:[]).filter(m=>m.can_do_text_to_speech).map(m=>({id:m.model_id,name:m.name}));store.set('aiModels',aiModels)}catch(_){}
+    renderModels();aiUI();renderVoices();refreshQuota();
+    aiStatus(aiVoices.length?`Connected. ${aiVoices.length} voices available. Choose one for each character above.`:'Connected, but no voices came back. Add some voices to your ElevenLabs account, then connect again.',aiVoices.length?'ok':'err');
+  }catch(e){aiStatus(aiExplain(e),'err')}
+  finally{$('aiConnect').disabled=false}
+}
+function aiUI(){
+  const on=$('aiOn').checked;$('aiBox').hidden=!on;
+  const ready=aiReady();$('aiModelField').hidden=!ready;$('aiClear').hidden=!ready;
+  $('voiceHint').textContent=ready?'ElevenLabs voices. Play gives a free sample of each voice.':'Pick the most natural-sounding voice for each character.';
+  updateCost();
+}
+let previewAudio=null;
+function playPreview(id){
+  const v=aiVoices.find(x=>x.id===id);
+  if(!v||!v.preview){notice('No sample available for that voice.');return}
+  try{if(previewAudio)previewAudio.pause();previewAudio=new Audio(v.preview);previewAudio.volume=settings.vol;previewAudio.play().catch(()=>notice('Couldn\'t play the sample. Check your connection.'))}catch(_){}
+}
+$('aiKey').value=aiKey;
+$('aiOn').checked=store.get('aiOn',false);
+$('aiOn').onchange=()=>{store.set('aiOn',$('aiOn').checked);aiUI();renderVoices();if(aiReady())refreshQuota()};
+$('aiConnect').onclick=aiConnect;
+$('aiShowKey').onclick=()=>{const k=$('aiKey');const show=k.type==='password';k.type=show?'text':'password';$('aiShowKey').textContent=show?'Hide key':'Show key'};
+$('aiModel').onchange=e=>{aiModel=e.target.value;store.set('aiModel',aiModel);updateCost()};
+$('aiPrepare').onclick=async()=>{
+  const b=$('aiPrepare');b.disabled=true;
+  try{await aiPrepare((d,n)=>{b.textContent=`Generating ${d} of ${n}…`});aiStatus('Voices ready for this scene.','ok')}
+  catch(e){aiStatus(aiExplain(e),'err')}
+  finally{b.disabled=false;b.textContent='Prepare voices for this scene';refreshQuota()}
+};
+let clearArmed=0;
+$('aiClear').onclick=async()=>{
+  const b=$('aiClear');
+  if(!clearArmed){clearArmed=setTimeout(()=>{clearArmed=0;b.textContent='Delete saved audio'},4000);b.textContent='Tap again to delete';return}
+  clearTimeout(clearArmed);clearArmed=0;await audioDB.clear();b.textContent='Delete saved audio';aiStatus('Saved audio deleted.');updateCost();
+};
 
 // ---------- speaking ----------
 let skipReader=false, audioCtx=null;
@@ -364,6 +537,33 @@ function speak(entry,token){
     next();
   });
 }
+let curSource=null;
+async function playAI(i,token){
+  let buf=await audioDB.get(aiCacheKey(i));
+  if(!buf){setState('reader',entries[i].name+' (generating…)');buf=await aiGenerate(i);refreshQuota()}
+  if(token!==runId||skipReader){skipReader=false;return}
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')await audioCtx.resume();
+  const ab=await audioCtx.decodeAudioData(buf.slice(0));
+  if(token!==runId||skipReader){skipReader=false;return}
+  setState('reader',entries[i].name+' speaking');
+  await new Promise(res=>{
+    const src=audioCtx.createBufferSource();src.buffer=ab;
+    const g=audioCtx.createGain();g.gain.value=settings.vol;
+    src.connect(g);g.connect(audioCtx.destination);
+    let done=false;const end=()=>{if(!done){done=true;clearTimeout(wd);if(curSource===src)curSource=null;res()}};
+    src.onended=end;curSource=src;src.start();
+    const wd=setTimeout(end,ab.duration*1000+1500);
+  });
+}
+function stopAI(){try{curSource&&curSource.stop()}catch(_){}curSource=null}
+async function speakLine(i,token){
+  if(aiReady()){
+    try{await playAI(i,token);return}
+    catch(e){notice(aiExplain(e)+' Using the device voice for this line.')}
+  }
+  await speak(entries[i],token);
+}
 // iPad/iPhone only allow sound to start from a tap, so prime speech and audio inside the tap itself.
 function unlockAudio(){
   try{
@@ -374,7 +574,7 @@ function unlockAudio(){
     if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}
   }catch(_){}
 }
-$('testBtn').onclick=()=>{unlockAudio();speechSynthesis.cancel();const o=entries.find(e=>e.name!==me);speak(o||{name:'',text:'Ready when you are.'},null)};
+$('testBtn').onclick=()=>{if(aiReady()){const o=entries.find(e=>e.name!==me);playPreview(aiVoiceFor(o?o.name:''));return}unlockAudio();speechSynthesis.cancel();const o=entries.find(e=>e.name!==me);speak(o||{name:'',text:'Ready when you are.'},null)};
 
 // ---------- microphone ----------
 
@@ -495,6 +695,12 @@ async function start(){
   try{wakeLock=await navigator.wakeLock?.request('screen')}catch(_){}
   const cd=+$('count').value, cdEl=$('countdown');
   setState('idle','Getting ready');
+  if(aiReady()){
+    try{await aiPrepare((d,n)=>setState('idle',`Preparing voices ${d} of ${n}`));}
+    catch(e){notice(aiExplain(e)+' Lines that couldn\'t be generated will use the device voice.')}
+    if(token!==runId)return;
+    refreshQuota();setState('idle','Getting ready');
+  }
   if(cd>0){
     cdEl.hidden=false;
     const floorP=mode!=='manual'?sampleFloor(Math.min(cd*1000-200,1500)):null;
@@ -511,7 +717,7 @@ async function start(){
       setState('reader',e.name+' speaking');
       if(settings.pickup)await sleep(settings.pickup);
       if(token!==runId)break;
-      await speak(e,token);
+      await speakLine(idx,token);
     }
     if(token!==runId)return;
     idx++;
@@ -519,7 +725,7 @@ async function start(){
   if(token===runId){setState('done','Scene complete');finish(false)}
 }
 function finish(stopped){
-  running=false;turn=null;stopRecog();speechSynthesis.cancel();document.body.classList.remove('running');
+  running=false;turn=null;stopRecog();speechSynthesis.cancel();stopAI();document.body.classList.remove('running');
   $('countdown').hidden=true;
   $('startBtn').disabled=false;$('nextBtn').disabled=true;$('stopBtn').disabled=true;
   $('startBtn').textContent=stopped?'Start scene':'Run it again';
@@ -531,11 +737,11 @@ function finish(stopped){
 function stop(){runId++;finish(true)}
 function next(){
   if(!running)return;
-  if(turn){finishTurn()}else{skipReader=true;speechSynthesis.cancel()}
+  if(turn){finishTurn()}else{skipReader=true;speechSynthesis.cancel();stopAI()}
 }
 function jumpTo(i){
   // restart the loop from a clicked line
-  runId++;turn=null;stopRecog();speechSynthesis.cancel();running=false;startIdx=i;
+  runId++;turn=null;stopRecog();speechSynthesis.cancel();stopAI();running=false;startIdx=i;
   const c=$('count').value;$('count').value='0';
   start().finally(()=>{$('count').value=c});
 }
@@ -553,7 +759,7 @@ document.addEventListener('keydown',e=>{
 });
 
 if(isIOS)$('iosNote').hidden=false;
-modeHint();rebuild();updateMark();
+modeHint();renderModels();aiUI();rebuild();updateMark();if(aiReady())refreshQuota();
 })();
 </script>
 </body>
